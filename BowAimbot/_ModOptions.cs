@@ -14,8 +14,6 @@ namespace BowAimbot
         public static List<string> excludedArrows = new List<string>();
         public static ExcludedArrow arrows;
 
-        // ── Mod Options ─────────────────────────────────────────────────────────—  
-
         [ModOption("Enabled", "Enables/Disables the Mod")]
         public static bool enabled = true;
 
@@ -36,6 +34,8 @@ namespace BowAimbot
         [ModOptionSlider]
         [ModOption("Max Distance", tooltip = "Max distance to the creature", category = "Settings")]
         public static int maxDistanceToCreature = 100;
+
+
 
         [ModOption(name = "Aim Part", tooltip = "Part it aims at", valueSourceName = nameof(AimPartValues), category = "Settings")]
         public static string ragdollAimPart;
@@ -100,6 +100,6 @@ namespace BowAimbot
             ["Right Foot"] = new AimPartDefinition { PartType = RagdollPart.Type.RightFoot, GetPosition = (t, c) => t.position },
         };
 
-        // ── End of Mod Options ─────────────────────────────────────────────────
+
     }
 }
