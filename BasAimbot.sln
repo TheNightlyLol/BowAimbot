@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.6.11806.211 stable
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BASAimbot", "BowAimbot\BASAimbot.csproj", "{9F1AC34F-80B7-40AA-BA20-ED153C31F4DB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasAimbot", "BowAimbot\BasAimbot.csproj", "{9F1AC34F-80B7-40AA-BA20-ED153C31F4DB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
