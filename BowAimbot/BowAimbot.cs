@@ -4,7 +4,7 @@ using ThunderRoad;
 using ThunderRoad.AI.Get;
 using UnityEngine;
 
-namespace BowAimbot
+namespace BasAimbot
 {
     public class BowAimbot : ThunderScript
     {
@@ -46,6 +46,8 @@ namespace BowAimbot
 
         private void OnArrowCollision(CollisionInstance collision)
         {
+            if (collision.damageStruct.hitRagdollPart != null) return; 
+
             Item arrow = collision.sourceColliderGroup.collisionHandler.item;
             StopSeeking(arrow);
             arrow.OnFlyEndEvent -= OnArrowFlyEnd;

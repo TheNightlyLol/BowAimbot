@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 using ThunderRoad;
 using UnityEngine;
 
-namespace BowAimbot
+namespace BasAimbot
 {
     public static class _ModOptions
     {
 
         // -- Bow Options --
 
-        [ModOptionCategory("Bow", 0)]
+        [ModOptionCategory("Bow", 1)]
         [ModOption("Enabled", "Enables/Disables the aimbot for Bows")]
         public static bool bowEnabled = true;
 
@@ -22,29 +22,29 @@ namespace BowAimbot
         [ModOption("Seeking Speed", interactionType = ModOption.InteractionType.Slider)]
         public static float bowSeekingSpeed = 1f;
 
-        [ModOptionCategory("Bow", 2)]
+        [ModOptionCategory("Bow", 1)]
         [ModOptionButton]
         [ModOption("Wall Bang", "Enables/Disables wall bang")]
         public static bool bowWallBang = false;
 
-        [ModOptionCategory("Bow", 3)]
+        [ModOptionCategory("Bow", 1)]
         [ModOptionButton]
         [ModOption("Play Effect on Hit", "Makes an effect play on hit", valueSourceName = nameof(_PlayEffectsBow))] // Need to set this to be multiple options 
         public static string bowPlayEffect;
 
         //  If the target is a little bit away, it will make it so then when the arrow goes flying it'll suddenly speedup like half a second in and make a firework sound and effect (only will play effect if it's visible)
-        [ModOptionCategory("Bow", 4)]
+        [ModOptionCategory("Bow", 1)]
         [ModOptionButton]
         [ModOption("Firework mode")]
         public static bool bowFireworkMode = false; 
 
         // -- Throwing Star Options -- 
 
-        [ModOptionCategory("Throwing Stars", 0)]
+        [ModOptionCategory("Throwing Stars", 2)]
         [ModOption("Enabled", "Enables/Disables the aimbot for Throwing Stars")]
         public static bool starEnabled = true;
 
-        [ModOptionCategory("Throwing Stars", 1)]
+        [ModOptionCategory("Throwing Stars", 2)]
         [ModOptionFloatValues(0.1f, 10f, 0.1f)]
         [ModOption("Seeking Speed", interactionType = ModOption.InteractionType.Slider)]
         public static float starSeekingSpeed = 1f;
@@ -54,30 +54,29 @@ namespace BowAimbot
         [ModOption("Wall Bang", "Enables/Disables wall bang")]
         public static bool starWallBang = false;
 
-        [ModOptionCategory("Throwing Stars", 3)]
+        [ModOptionCategory("Throwing Stars", 2)]
         [ModOptionButton]
         [ModOption("Play Effect on Hit", "Makes an effect play on hit", valueSourceName = nameof(_PlayEffectsStar))] // Need to set this to be multiple options 
         public static string starPlayEffect;
 
-        [ModOptionCategory("Throwing Stars", 4)]
+        [ModOptionCategory("Throwing Stars", 2)]
         [ModOptionButton]
         [ModOption("Firework mode")]
         public static bool starFireworkMode = false;
-
-
+        
         // -- General Options --
 
-        [ModOptionCategory("General", 0)]
+        [ModOptionCategory("General", 3)]
         [ModOption(name = "Aim Part", tooltip = "Part it aims at", valueSourceName = nameof(AimPartValues))]
         public static string ragdollAimPart;
 
-        [ModOptionCategory("General", 1)]
+        [ModOptionCategory("General", 3)]
         [ModOptionIntValues(0, 360, 1)]
         [ModOptionSlider]
         [ModOption("Max Angle", tooltip = "This just means how far away from the target you can look/aim for it to hit, set to 360 for all around.")]
         public static int angle = 180;
 
-        [ModOptionCategory("General", 2)]
+        [ModOptionCategory("General", 3)]
         [ModOptionIntValues(0, 250, 1)]
         [ModOptionSlider]
         [ModOption("Max Distance", tooltip = "Max distance to the creature")]

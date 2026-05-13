@@ -6,7 +6,7 @@ using System.Security.AccessControl;
 using ThunderRoad.AI.Get;
 using System.Diagnostics;
 
-namespace BowAimbot
+namespace BasAimbot
 {
     public class StarAimbot : ThunderScript
     {
@@ -28,7 +28,7 @@ namespace BowAimbot
             if (!throwing) return; // So then simply dropping the item won't make it seek. 
 
             GameManager.local.StartCoroutine(SeekRoutine(handle.item));
-            IgnoreStarCollisions(handle.item, true); 
+            IgnoreAllStarCollisions();
             handle.item.OnFlyEndEvent += OnStarFlyEnd; 
             handle.item.mainCollisionHandler.OnCollisionStartEvent += OnStarCollision;
 
@@ -36,19 +36,17 @@ namespace BowAimbot
                 damager.OnPenetrateEvent += OnStarPenetrate;
         }
 
-        private void IgnoreStarCollisions(Item thrownStar, bool ignore)
+        private void IgnoreAllStarCollisions()
         {
-            foreach (Item item in Item.allActive)
-            {
-                if (item == thrownStar) continue;
-                if (item.data.id != "ThrowablesRaktaThrowingStar") continue;
+            var stars = Item.allActive.Where(i => i.data.id == "ThrowablesRaktaThrowingStar").ToList();
 
-                foreach (ColliderGroup sourceGroup in thrownStar.colliderGroups)
-                    foreach (Collider source in sourceGroup.colliders)
-                        foreach (ColliderGroup targetGroup in item.colliderGroups)
-                            foreach (Collider target in targetGroup.colliders)
-                                Physics.IgnoreCollision(source, target, ignore);
-            }
+            for (int i = 0; i < stars.Count; i++)
+                for (int j = i + 1; j < stars.Count; j++)
+                    foreach (ColliderGroup cg1 in stars[i].colliderGroups)
+                        foreach (Collider c1 in cg1.colliders)
+                            foreach (ColliderGroup cg2 in stars[j].colliderGroups)
+                                foreach (Collider c2 in cg2.colliders)
+                                    Physics.IgnoreCollision(c1, c2, true);
         }
 
         private void OnStarPenetrate(Damager damager, CollisionInstance collision, EventTime eventTime)
@@ -57,7 +55,6 @@ namespace BowAimbot
 
             if (eventTime == EventTime.OnStart) return;
             Item star = damager.collisionHandler.item;
-            IgnoreStarCollisions(star, false);
             Creature hitCreature = collision.damageStruct.hitRagdollPart?.ragdoll.creature;
             switch (_ModOptions.starPlayEffect)
             {
@@ -129,13 +126,14 @@ namespace BowAimbot
             StopSeeking(star);
             star.OnFlyEndEvent -= OnStarFlyEnd;
             star.mainCollisionHandler.OnCollisionStartEvent -= OnStarCollision;
-            IgnoreStarCollisions(star, false);
             foreach (Damager damager in star.mainCollisionHandler.damagers)
                 damager.OnPenetrateEvent -= OnStarPenetrate;
         }
 
         private void OnStarCollision(CollisionInstance collision)
         {
+            if (collision.damageStruct.hitRagdollPart != null) return;
+
             Item star = collision.sourceColliderGroup.collisionHandler.item;
             StopSeeking(star);
             star.OnFlyEndEvent -= OnStarFlyEnd;
