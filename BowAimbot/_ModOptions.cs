@@ -11,19 +11,29 @@ namespace BowAimbot
     public static class _ModOptions
     {
         public static string lastShotArrowId;
-        public static List<string> excludedArrows = new List<string>();
-        public static ExcludedArrow arrows;
 
         [ModOption("Enabled", "Enables/Disables the Mod")]
         public static bool enabled = true;
 
-        [ModOptionFloatValues(0.1f, 10f, 0.1f)]
         [ModOptionCategory("Settings", 1)]
+        [ModOptionFloatValues(0.1f, 10f, 0.1f)]
         [ModOption("Seeking Speed", interactionType = ModOption.InteractionType.Slider, category = "Settings")]
         public static float seekingSpeed = 1f;
 
-        [ModOption("Wall Bang", "Enables/Disables wall bang", category = "Settings")]
+        [ModOptionCategory("Settings", 2)]
+        [ModOptionButton]
+        [ModOption("Wall Bang", "Enables/Disables wall bang")]
         public static bool wallBang = false;
+
+        [ModOptionCategory("Settings", 3)]
+        [ModOptionButton]
+        [ModOption("Make go big boom boom!", "Makes the arrow go big boom boom on penetrate")]
+        public static bool bigBoomBoom = false;
+
+        [ModOptionCategory("Settings", 4)]
+        [ModOptionButton]
+        [ModOption("Firework mode")]
+        public static bool fireworkMode = false;
 
         [ModOptionIntValues(0, 180, 1)]
         [ModOptionSlider]
@@ -34,8 +44,6 @@ namespace BowAimbot
         [ModOptionSlider]
         [ModOption("Max Distance", tooltip = "Max distance to the creature", category = "Settings")]
         public static int maxDistanceToCreature = 100;
-
-
 
         [ModOption(name = "Aim Part", tooltip = "Part it aims at", valueSourceName = nameof(AimPartValues), category = "Settings")]
         public static string ragdollAimPart;
@@ -54,32 +62,6 @@ namespace BowAimbot
             new ModOptionString("Right Foot",   "Right Foot"),
             new ModOptionString("Random",       "Random")
         };
-
-        [ModOptionButton]
-        [ModOption("Exclude Last Shot Arrow", valueSourceName = nameof(ExcludeButtonLabel), category = "Exclusion")]
-        public static void ExcludeArrow(string _)
-        {
-            if (lastShotArrowId != null && !excludedArrows.Contains(lastShotArrowId))
-            {
-                excludedArrows.Add(lastShotArrowId);
-                MainScript.Save();
-            }
-        }
-
-        [ModOptionButton]
-        [ModOption("Unexclude Last Shot Arrow", "Unexclude the last shot arrow", valueSourceName = nameof(UnexcludeButtonLabel), category = "Exclusion")]
-        public static void UnexcludeArrow(string _)
-        {
-            if (_ModOptions.lastShotArrowId != null && _ModOptions.excludedArrows.Contains(_ModOptions.lastShotArrowId))
-            {
-                _ModOptions.excludedArrows.Remove(_ModOptions.lastShotArrowId);
-                MainScript.Save();
-            }
-        }
-
-        internal static ModOptionString[] ExcludeButtonLabel() => new[] { new ModOptionString("Exclude Arrow", "Exclude Arrow") };
-        internal static ModOptionString[] UnexcludeButtonLabel() => new[] { new ModOptionString("Unexclude Arrow", "Unexclude Arrow") };
-
 
         public class AimPartDefinition
         {

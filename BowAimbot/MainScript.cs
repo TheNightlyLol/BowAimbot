@@ -1,23 +1,14 @@
-﻿using Newtonsoft.Json;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using System.Linq;
 using ThunderRoad;
 using UnityEngine;
 
 namespace BowAimbot
 {
-    public class ExcludedArrow
-    {
-        public List<string> excludedArrowsIds = new List<string>();
-    }
-
     public class MainScript : ThunderScript
     {
         private const float ArrowSpeed = 30f;
-        private const float ArrivalDistSqr = 0.15f; // Squared threshold — avoids costly sqrt each frame
-        private const float MaxWallBangDist = 30f;
-
+        private const float ArrivalDistSqr = 0.15f; 
         private Creature targetCreature;
         private float targetDistance = Mathf.Infinity;
 
@@ -25,12 +16,6 @@ namespace BowAimbot
         {
             base.ScriptLoaded(modData);
             EventManager.OnBowFireEvent += OnBowFire;
-            EventManager.onLevelLoad += OnLevelLoad;
-        }
-
-        private void OnLevelLoad(LevelData levelData, LevelData.Mode mode, EventTime eventTime)
-        {
-            GameManager.local.StartCoroutine(Load());
         }
 
         private void OnBowFire(RagdollHand hand, BowString bowString, Item arrow)
@@ -38,7 +23,6 @@ namespace BowAimbot
             _ModOptions.lastShotArrowId = arrow.itemId;
 
             if (!_ModOptions.enabled) return;
-            if (_ModOptions.excludedArrows.Contains(arrow.itemId)) return;
             if (arrow.lastHandler.creature != Player.currentCreature) return;
 
             GameManager.local.StartCoroutine(SeekRoutine(arrow));
@@ -70,14 +54,41 @@ namespace BowAimbot
 
         private void OnArrowPenetrate(Damager damager, CollisionInstance collision, EventTime eventTime)
         {
-            // Wait until penetration finishes processing before stopping — creature may still be alive
             if (eventTime == EventTime.OnStart) return;
 
             Item arrow = damager.collisionHandler.item;
             StopSeeking(arrow);
+
+            if (_ModOptions.bigBoomBoom)
+            {
+                if (Physics.Raycast(arrow.transform.position, arrow.flyDirRef.forward, out RaycastHit hit, 200f,
+                    ~LayerMask.GetMask("TouchObject", "Zone", "LightProbeVolume", "PlayerHandAndFoot")))
+                {
+                    Creature hitCreature = hit.collider?.transform.root.GetComponent<Creature>();
+
+                    if (hitCreature != null && !hitCreature.isKilled)
+                    {
+                        EffectData effectData = Catalog.GetData<EffectData>("Effect_SpellGravityPush", true);
+                        if (effectData != null)
+                        {
+                            EffectInstance effect = effectData.Spawn(hit.point, Quaternion.LookRotation(hit.normal));
+                            effect.Play();
+                            hitCreature.AddForce((hitCreature.transform.position - hit.point).normalized * 20f, ForceMode.Impulse);
+                            GameManager.local.StartCoroutine(DespawnAfter(effect, 3f));
+                        }
+                    }
+                }
+            }
+
             arrow.OnFlyEndEvent -= OnArrowFlyEnd;
             arrow.mainCollisionHandler.OnCollisionStartEvent -= OnArrowCollision;
             damager.OnPenetrateEvent -= OnArrowPenetrate;
+        }
+
+        private IEnumerator DespawnAfter(EffectInstance effect, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            effect?.Despawn();
         }
 
         private void StopSeeking(Item arrow)
@@ -218,34 +229,6 @@ namespace BowAimbot
                 return hit.collider.transform.root.GetComponent<Creature>() != null;
 
             return false;
-        }
-
-        public static void Save()
-        {
-            _ModOptions.arrows = new ExcludedArrow { excludedArrowsIds = _ModOptions.excludedArrows };
-            GameManager.local.StartCoroutine(GameManager.platform.WriteSaveCoroutine(
-                new PlatformBase.Save("ExcludedArrows", "sav",
-                    JsonConvert.SerializeObject(_ModOptions.arrows, Catalog.GetJsonNetSerializerSettings()))));
-        }
-
-        public static IEnumerator Load()
-        {
-            yield return GameManager.local.StartCoroutine(
-                GameManager.platform.ReadSaveCoroutine("ExcludedArrows", "sav", save =>
-                {
-                    if (save != null)
-                    {
-                        _ModOptions.arrows = JsonConvert.DeserializeObject<ExcludedArrow>(save.data);
-                        _ModOptions.excludedArrows = _ModOptions.arrows.excludedArrowsIds;
-                    }
-                    else
-                    {
-                        // No save file found — initialize defaults and create one
-                        _ModOptions.arrows = new ExcludedArrow();
-                        _ModOptions.excludedArrows = _ModOptions.arrows.excludedArrowsIds;
-                        Save();
-                    }
-                }));
         }
     }
 }
