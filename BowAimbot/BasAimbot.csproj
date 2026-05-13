@@ -7,8 +7,8 @@
     <ProjectGuid>{9F1AC34F-80B7-40AA-BA20-ED153C31F4DB}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BowAimbot</RootNamespace>
-    <AssemblyName>BowAimbot</AssemblyName>
+    <RootNamespace>BasAimbot</RootNamespace>
+    <AssemblyName>BasAimbot</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -56,11 +56,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FireballAimbot.cs" />
     <Compile Include="GunAimbot.cs" />
-    <Compile Include="KnifeAimbot.cs" />
     <Compile Include="BowAimbot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StarAimbot.cs" />
+    <Compile Include="StarAndKnife.cs" />
     <Compile Include="_ModOptions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

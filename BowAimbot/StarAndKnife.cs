@@ -2,13 +2,10 @@
 using ThunderRoad;
 using System.Collections;
 using System.Linq;
-using System.Security.AccessControl;
-using ThunderRoad.AI.Get;
-using System.Diagnostics;
 
 namespace BasAimbot
 {
-    public class StarAimbot : ThunderScript
+    public class StarAndKnife : ThunderScript
     {
         private const float StarSpeed = 30f;
         private const float ArrivalDistSqr = 0.15f;
@@ -23,8 +20,8 @@ namespace BasAimbot
 
         private void OnItemRelease(Handle handle, RagdollHand hand, bool throwing)
         {
-            if (hand.creature != Player.currentCreature) return; 
-            if (handle.item?.data?.id != "ThrowablesRaktaThrowingStar") return;
+            if (hand.creature != Player.currentCreature) return;
+            if (handle.item?.data?.id != "ThrowablesRaktaThrowingStar" || handle.item?.data?.id != "ThrowablesDagger") return;
             if (!throwing) return; // So then simply dropping the item won't make it seek. 
 
             GameManager.local.StartCoroutine(SeekRoutine(handle.item));

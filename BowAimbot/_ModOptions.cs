@@ -36,23 +36,23 @@ namespace BasAimbot
 
         // -- Throwing Star Options -- 
 
-        [ModOptionCategory("Throwing Stars", 2)]
-        [ModOption("Enabled", "Enables/Disables the aimbot for Throwing Stars")]
+        [ModOptionCategory("Throwing Stars and Knives", 2)]
+        [ModOption("Enabled", "Enables/Disables the aimbot for Throwing Stars and Throwing Knives")]
         public static bool starEnabled = true;
 
-        [ModOptionCategory("Throwing Stars", 2)]
+        [ModOptionCategory("Throwing Stars and Knives", 2)]
         [ModOptionFloatValues(0.1f, 10f, 0.1f)]
         [ModOption("Seeking Speed", interactionType = ModOption.InteractionType.Slider)]
         public static float starSeekingSpeed = 1f;
 
-        [ModOptionCategory("Throwing Stars", 2)]
+        [ModOptionCategory("Throwing Stars and Knives", 2)]
         [ModOptionButton]
         [ModOption("Wall Bang", "Enables/Disables wall bang")]
         public static bool starWallBang = false;
 
 
 
-        [ModOptionCategory("Throwing Stars", 2)]
+        [ModOptionCategory("Throwing Stars and Knives", 2)]
         [ModOptionButton]
         [ModOption("Firework mode")]
         public static bool starFireworkMode = false;
