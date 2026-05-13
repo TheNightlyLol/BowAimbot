@@ -60,25 +60,70 @@ namespace BowAimbot
             Item arrow = damager.collisionHandler.item;
             StopSeeking(arrow);
 
-            if (_ModOptions.bowPlayEffect) // Make this a switch so the player can choose different effects. 
+            switch (_ModOptions.bowPlayEffect)
             {
-                if (Physics.Raycast(arrow.transform.position, arrow.flyDirRef.forward, out RaycastHit hit, 200f,
+                case "Gravity":
+                    if (Physics.Raycast(arrow.transform.position, arrow.flyDirRef.forward, out RaycastHit hit, 200f,
                     ~LayerMask.GetMask("TouchObject", "Zone", "LightProbeVolume", "PlayerHandAndFoot")))
-                {
-                    Creature hitCreature = hit.collider?.transform.root.GetComponent<Creature>();
-
-                    if (hitCreature != null && !hitCreature.isKilled)
                     {
-                        EffectData effectData = Catalog.GetData<EffectData>("SpellGravityPush", true);
-                        if (effectData != null)
+                        Creature hitCreature = hit.collider?.transform.root.GetComponent<Creature>();
+
+                        if (hitCreature != null && !hitCreature.isKilled)
                         {
-                            EffectInstance effect = effectData.Spawn(hit.point, Quaternion.LookRotation(hit.normal));
-                            effect.Play();
-                            hitCreature.AddForce((hitCreature.transform.position - hit.point).normalized * 20f, ForceMode.Impulse);
-                            GameManager.local.StartCoroutine(DespawnAfter(effect, 3f));
+                            EffectData effectData = Catalog.GetData<EffectData>("SpellGravityPush", true);
+                            if (effectData != null)
+                            {
+                                EffectInstance effect = effectData.Spawn(hit.point, Quaternion.LookRotation(hit.normal));
+                                effect.Play();
+                                hitCreature.AddForce((hitCreature.transform.position - hit.point).normalized * 20f, ForceMode.Impulse);
+                                GameManager.local.StartCoroutine(DespawnAfter(effect, 3f));
+                            }
                         }
                     }
-                }
+                    break;
+                case "Explosion":
+                    if (Physics.Raycast(arrow.transform.position, arrow.flyDirRef.forward, out RaycastHit hit2, 200f,
+                    ~LayerMask.GetMask("TouchObject", "Zone", "LightProbeVolume", "PlayerHandAndFoot")))
+                    {
+                        Creature hitCreature = hit2.collider?.transform.root.GetComponent<Creature>();
+
+                        if (hitCreature != null && !hitCreature.isKilled)
+                        {
+                            EffectData effectData = Catalog.GetData<EffectData>("MeteorExplosion", true);
+                            if (effectData != null)
+                            {
+                                EffectInstance effect = effectData.Spawn(hit2.point, Quaternion.LookRotation(hit2.normal));
+                                effect.Play();
+                                hitCreature.AddForce((hitCreature.transform.position - hit2.point).normalized * 20f, ForceMode.Impulse);
+                                GameManager.local.StartCoroutine(DespawnAfter(effect, 3f));
+                            }
+                        }
+                    }
+                    break;
+                case "Lightning Strike":
+                    if (Physics.Raycast(arrow.transform.position, arrow.flyDirRef.forward, out RaycastHit hit3, 200f,
+                    ~LayerMask.GetMask("TouchObject", "Zone", "LightProbeVolume", "PlayerHandAndFoot")))
+                    {
+                        Creature hitCreature = hit3.collider?.transform.root.GetComponent<Creature>();
+
+                        if (hitCreature != null && !hitCreature.isKilled)
+                        {
+                            EffectData effectData = Catalog.GetData<EffectData>("SpellLightningBolt", true);
+                            if (effectData != null)
+                            {
+                                EffectInstance effect = effectData.Spawn(hit3.point, Quaternion.LookRotation(hit3.normal));
+                                effect.Play();
+                                hitCreature.AddForce((hitCreature.transform.position - hit3.point).normalized * 20f, ForceMode.Impulse);
+                                GameManager.local.StartCoroutine(DespawnAfter(effect, 3f));
+                            }
+                        }
+                    }
+                    break;
+                case "None":
+                    break;
+                default:
+                    break;
+
             }
 
             arrow.OnFlyEndEvent -= OnArrowFlyEnd;
