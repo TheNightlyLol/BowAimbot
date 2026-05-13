@@ -16,6 +16,7 @@ namespace BasAimbot
         {
             base.ScriptLoaded(modData);
             EventManager.OnItemRelease += OnItemRelease;
+            EventManager.OnItemGrab += OnItemGrab; 
         }
 
         private void OnItemRelease(Handle handle, RagdollHand hand, bool throwing)
@@ -32,6 +33,12 @@ namespace BasAimbot
             foreach (Damager damager in handle.item.mainCollisionHandler.damagers)
                 damager.OnPenetrateEvent += OnStarPenetrate;
         }
+
+        private void OnItemGrab(Handle handle, RagdollHand hand)
+        {
+            Debug.Log(handle.item.data.id);
+        }
+
 
         private void IgnoreAllStarCollisions()
         {

@@ -56,11 +56,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FireballAimbot.cs" />
     <Compile Include="GunAimbot.cs" />
-    <Compile Include="KnifeAimbot.cs" />
     <Compile Include="BowAimbot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StarAimbot.cs" />
+    <Compile Include="StarAndKnife.cs" />
     <Compile Include="_ModOptions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
