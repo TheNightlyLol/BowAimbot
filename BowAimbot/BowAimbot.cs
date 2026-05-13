@@ -20,7 +20,7 @@ namespace BowAimbot
 
         private void OnBowFire(RagdollHand hand, BowString bowString, Item arrow)
         {
-            if (!_ModOptions.enabled) return;
+            if (!_ModOptions.bowEnabled) return;
             if (arrow.lastHandler.creature != Player.currentCreature) return;
 
             GameManager.local.StartCoroutine(SeekRoutine(arrow));
@@ -60,7 +60,7 @@ namespace BowAimbot
             Item arrow = damager.collisionHandler.item;
             StopSeeking(arrow);
 
-            if (_ModOptions.bigBoomBoom)
+            if (_ModOptions.bowPlayEffect) // Make this a switch so the player can choose different effects. 
             {
                 if (Physics.Raycast(arrow.transform.position, arrow.flyDirRef.forward, out RaycastHit hit, 200f,
                     ~LayerMask.GetMask("TouchObject", "Zone", "LightProbeVolume", "PlayerHandAndFoot")))
@@ -122,15 +122,15 @@ namespace BowAimbot
                 {
                     Vector3 dir = toTarget.normalized;
 
-                    if (_ModOptions.wallBang)
+                    if (_ModOptions.bowWallBang)
                     {
                         // Disable collisions so the arrow can pass through walls
                         arrow.physicBody.rigidBody.detectCollisions = false;
-                        arrow.physicBody.velocity = dir * ArrowSpeed * _ModOptions.seekingSpeed;
+                        arrow.physicBody.velocity = dir * ArrowSpeed * _ModOptions.bowSeekingSpeed;
                     }
                     else if (HasLineOfSight(arrow, targetPos))
                     {
-                        arrow.physicBody.velocity = dir * ArrowSpeed * _ModOptions.seekingSpeed;
+                        arrow.physicBody.velocity = dir * ArrowSpeed * _ModOptions.bowSeekingSpeed;
                     }
                 }
                 else

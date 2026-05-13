@@ -10,41 +10,80 @@ namespace BowAimbot
 {
     public static class _ModOptions
     {
-        [ModOption("Enabled", "Enables/Disables the Mod")]
-        public static bool enabled = true;
 
-        [ModOptionCategory("Settings", 1)]
+        // -- Bow Options --
+
+        [ModOptionCategory("Bow", 0)]
+        [ModOption("Enabled", "Enables/Disables the aimbot for Bows")]
+        public static bool bowEnabled = true;
+
+        [ModOptionCategory("Bow", 1)]
         [ModOptionFloatValues(0.1f, 10f, 0.1f)]
-        [ModOption("Seeking Speed", interactionType = ModOption.InteractionType.Slider, category = "Settings")]
-        public static float seekingSpeed = 1f;
+        [ModOption("Seeking Speed", interactionType = ModOption.InteractionType.Slider)]
+        public static float bowSeekingSpeed = 1f;
 
-        [ModOptionCategory("Settings", 2)]
+        [ModOptionCategory("Bow", 2)]
         [ModOptionButton]
         [ModOption("Wall Bang", "Enables/Disables wall bang")]
-        public static bool wallBang = false;
+        public static bool bowWallBang = false;
 
-        [ModOptionCategory("Settings", 3)]
+        [ModOptionCategory("Bow", 3)]
         [ModOptionButton]
-        [ModOption("Make go big boom boom!", "Makes the arrow go big boom boom on penetrate")]
-        public static bool bigBoomBoom = false;
+        [ModOption("Play Effect on Hit", "Makes an effect play on hit")] // Need to set this to be multiple options 
+        public static bool bowPlayEffect = false;
 
-        [ModOptionCategory("Settings", 4)]
+        //  If the target is a little bit away, it will make it so then when the arrow goes flying it'll suddenly speedup like half a second in and make a firework sound and effect (only will play effect if it's visible)
+        [ModOptionCategory("Bow", 4)]
         [ModOptionButton]
         [ModOption("Firework mode")]
-        public static bool fireworkMode = false;
+        public static bool bowFireworkMode = false; 
 
-        [ModOptionIntValues(0, 180, 1)]
+        // -- Throwing Star Options -- 
+
+        [ModOptionCategory("Throwing Stars", 0)]
+        [ModOption("Enabled", "Enables/Disables the aimbot for Throwing Stars")]
+        public static bool starEnabled = true;
+
+        [ModOptionCategory("Throwing Stars", 1)]
+        [ModOptionFloatValues(0.1f, 10f, 0.1f)]
+        [ModOption("Seeking Speed", interactionType = ModOption.InteractionType.Slider)]
+        public static float starSeekingSpeed = 1f;
+
+        [ModOptionCategory("Throwing Stars", 2)]
+        [ModOptionButton]
+        [ModOption("Wall Bang", "Enables/Disables wall bang")]
+        public static bool starWallBang = false;
+
+        [ModOptionCategory("Throwing Stars", 3)]
+        [ModOptionButton]
+        [ModOption("Play Effect on Hit", "Makes an effect play on hit")] // Need to set this to be multiple options 
+        public static bool starPlayEffect = false;
+
+        [ModOptionCategory("Throwing Stars", 4)]
+        [ModOptionButton]
+        [ModOption("Firework mode")]
+        public static bool starFireworkMode = false;
+
+
+        // -- General Options --
+
+        [ModOptionCategory("General", 0)]
+        [ModOption(name = "Aim Part", tooltip = "Part it aims at", valueSourceName = nameof(AimPartValues))]
+        public static string ragdollAimPart;
+
+        [ModOptionCategory("General", 1)]
+        [ModOptionIntValues(0, 360, 1)]
         [ModOptionSlider]
-        [ModOption("Max Angle", tooltip = "Max angle away from target part", category = "Settings")]
-        public static int angle = 15;
+        [ModOption("Max Angle", tooltip = "This just means how far away from the target you can look/aim for it to hit, set to 360 for all around.")]
+        public static int angle = 180;
 
+        [ModOptionCategory("General", 2)]
         [ModOptionIntValues(0, 250, 1)]
         [ModOptionSlider]
-        [ModOption("Max Distance", tooltip = "Max distance to the creature", category = "Settings")]
+        [ModOption("Max Distance", tooltip = "Max distance to the creature")]
         public static int maxDistanceToCreature = 100;
 
-        [ModOption(name = "Aim Part", tooltip = "Part it aims at", valueSourceName = nameof(AimPartValues), category = "Settings")]
-        public static string ragdollAimPart;
+
 
         internal static ModOptionString[] AimPartValues() => new[]
         {
