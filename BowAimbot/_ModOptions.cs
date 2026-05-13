@@ -10,8 +10,6 @@ namespace BowAimbot
 {
     public static class _ModOptions
     {
-        public static string lastShotArrowId;
-
         [ModOption("Enabled", "Enables/Disables the Mod")]
         public static bool enabled = true;
 
