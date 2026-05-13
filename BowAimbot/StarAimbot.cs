@@ -51,75 +51,15 @@ namespace BasAimbot
 
         private void OnStarPenetrate(Damager damager, CollisionInstance collision, EventTime eventTime)
         {
- 
-
             if (eventTime == EventTime.OnStart) return;
             Item star = damager.collisionHandler.item;
             Creature hitCreature = collision.damageStruct.hitRagdollPart?.ragdoll.creature;
-            switch (_ModOptions.starPlayEffect)
-            {
-                case "Gravity":
-                    if (hitCreature != null && !hitCreature.isKilled)
-                    {
-                        EffectData effectData = Catalog.GetData<EffectData>("SpellGravityPush", true);
-                        if (effectData != null)
-                        {
-                            EffectInstance effect = effectData.Spawn(collision.contactPoint, Quaternion.LookRotation(collision.contactNormal));
-                            effect.Play();
-                            GameManager.local.StartCoroutine(DespawnAfter(effect, 3f));
-
-                            Vector3 pushDir = (hitCreature.transform.position - collision.contactPoint).normalized;
-                            hitCreature.ragdoll.rootPart.physicBody.AddForce(pushDir * 20f, ForceMode.Impulse);
-                        }
-                    }
-                    break; 
-                case "Explosion":
-                    if (hitCreature != null && !hitCreature.isKilled)
-                    {
-                        EffectData effectData = Catalog.GetData<EffectData>("MeteorExplosion", true);
-                        if (effectData != null)
-                        {
-                            EffectInstance effect = effectData.Spawn(collision.contactPoint, Quaternion.LookRotation(collision.contactNormal));
-                            effect.Play();
-                            GameManager.local.StartCoroutine(DespawnAfter(effect, 3f));
-
-                            Vector3 pushDir = (hitCreature.transform.position - collision.contactPoint).normalized;
-                            hitCreature.ragdoll.rootPart.physicBody.AddForce(pushDir * 20f, ForceMode.Impulse);
-                        }
-                    }
-                    break;
-                case "Lightning Strike":
-                    if (hitCreature != null && !hitCreature.isKilled)
-                    {
-                        EffectData effectData = Catalog.GetData<EffectData>("HitLightningBolt", true);
-                        if (effectData != null)
-                        {
-                            EffectInstance effect = effectData.Spawn(collision.contactPoint, Quaternion.LookRotation(collision.contactNormal));
-                            effect.Play();
-                            GameManager.local.StartCoroutine(DespawnAfter(effect, 3f));
-
-                            Vector3 pushDir = (hitCreature.transform.position - collision.contactPoint).normalized;
-                            hitCreature.ragdoll.rootPart.physicBody.AddForce(pushDir * 20f, ForceMode.Impulse);
-                        }
-                    }
-                    break;
-                case "None":
-                    break; 
-                default:
-                    break;
-
-            }
+            
             StopSeeking(star);
             star.OnFlyEndEvent -= OnStarFlyEnd;
             star.mainCollisionHandler.OnCollisionStartEvent -= OnStarCollision;
             damager.OnPenetrateEvent -= OnStarPenetrate;
         }   
-
-        private IEnumerator DespawnAfter(EffectInstance effect, float delay)
-        {
-            yield return new WaitForSeconds(delay);
-            effect?.Despawn();
-        }
 
         private void OnStarFlyEnd(Item star)
         {

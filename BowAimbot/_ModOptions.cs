@@ -27,10 +27,6 @@ namespace BasAimbot
         [ModOption("Wall Bang", "Enables/Disables wall bang")]
         public static bool bowWallBang = false;
 
-        [ModOptionCategory("Bow", 1)]
-        [ModOptionButton]
-        [ModOption("Play Effect on Hit", "Makes an effect play on hit", valueSourceName = nameof(_PlayEffectsBow))] // Need to set this to be multiple options 
-        public static string bowPlayEffect;
 
         //  If the target is a little bit away, it will make it so then when the arrow goes flying it'll suddenly speedup like half a second in and make a firework sound and effect (only will play effect if it's visible)
         [ModOptionCategory("Bow", 1)]
@@ -54,10 +50,7 @@ namespace BasAimbot
         [ModOption("Wall Bang", "Enables/Disables wall bang")]
         public static bool starWallBang = false;
 
-        [ModOptionCategory("Throwing Stars", 2)]
-        [ModOptionButton]
-        [ModOption("Play Effect on Hit", "Makes an effect play on hit", valueSourceName = nameof(_PlayEffectsStar))] // Need to set this to be multiple options 
-        public static string starPlayEffect;
+
 
         [ModOptionCategory("Throwing Stars", 2)]
         [ModOptionButton]
