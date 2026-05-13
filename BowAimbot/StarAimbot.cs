@@ -37,67 +37,56 @@ namespace BowAimbot
 
         private void OnStarPenetrate(Damager damager, CollisionInstance collision, EventTime eventTime)
         {
+ 
+
             if (eventTime == EventTime.OnStart) return;
 
             Item star = damager.collisionHandler.item;
-            StopSeeking(star);
-
+            Creature hitCreature = collision.damageStruct.hitRagdollPart?.ragdoll.creature;
             switch (_ModOptions.starPlayEffect)
             {
                 case "Gravity":
-                    if (Physics.Raycast(star.transform.position, star.flyDirRef.forward, out RaycastHit hit, 200f,
-                    ~LayerMask.GetMask("TouchObject", "Zone", "LightProbeVolume", "PlayerHandAndFoot")))
+                    if (hitCreature != null && !hitCreature.isKilled)
                     {
-                        Creature hitCreature = hit.collider?.transform.root.GetComponent<Creature>();
-
-                        if (hitCreature != null && !hitCreature.isKilled)
+                        EffectData effectData = Catalog.GetData<EffectData>("SpellGravityPush", true);
+                        if (effectData != null)
                         {
-                            EffectData effectData = Catalog.GetData<EffectData>("SpellGravityPush", true);
-                            if (effectData != null)
-                            {
-                                EffectInstance effect = effectData.Spawn(hit.point, Quaternion.LookRotation(hit.normal));
-                                effect.Play();
-                                hitCreature.AddForce((hitCreature.transform.position - hit.point).normalized * 20f, ForceMode.Impulse);
-                                GameManager.local.StartCoroutine(DespawnAfter(effect, 3f));
-                            }
+                            EffectInstance effect = effectData.Spawn(collision.contactPoint, Quaternion.LookRotation(collision.contactNormal));
+                            effect.Play();
+                            GameManager.local.StartCoroutine(DespawnAfter(effect, 3f));
+
+                            Vector3 pushDir = (hitCreature.transform.position - collision.contactPoint).normalized;
+                            hitCreature.ragdoll.rootPart.physicBody.AddForce(pushDir * 20f, ForceMode.Impulse);
                         }
                     }
                     break; 
                 case "Explosion":
-                    if (Physics.Raycast(star.transform.position, star.flyDirRef.forward, out RaycastHit hit2, 200f,
-                    ~LayerMask.GetMask("TouchObject", "Zone", "LightProbeVolume", "PlayerHandAndFoot")))
+                    if (hitCreature != null && !hitCreature.isKilled)
                     {
-                        Creature hitCreature = hit2.collider?.transform.root.GetComponent<Creature>();
-
-                        if (hitCreature != null && !hitCreature.isKilled)
+                        EffectData effectData = Catalog.GetData<EffectData>("MeteorExplosion", true);
+                        if (effectData != null)
                         {
-                            EffectData effectData = Catalog.GetData<EffectData>("MeteorExplosion", true);
-                            if (effectData != null)
-                            {
-                                EffectInstance effect = effectData.Spawn(hit2.point, Quaternion.LookRotation(hit2.normal));
-                                effect.Play();
-                                hitCreature.AddForce((hitCreature.transform.position - hit2.point).normalized * 20f, ForceMode.Impulse);
-                                GameManager.local.StartCoroutine(DespawnAfter(effect, 3f));
-                            }
+                            EffectInstance effect = effectData.Spawn(collision.contactPoint, Quaternion.LookRotation(collision.contactNormal));
+                            effect.Play();
+                            GameManager.local.StartCoroutine(DespawnAfter(effect, 3f));
+
+                            Vector3 pushDir = (hitCreature.transform.position - collision.contactPoint).normalized;
+                            hitCreature.ragdoll.rootPart.physicBody.AddForce(pushDir * 20f, ForceMode.Impulse);
                         }
                     }
                     break;
                 case "Lightning Strike":
-                    if (Physics.Raycast(star.transform.position, star.flyDirRef.forward, out RaycastHit hit3, 200f,
-                    ~LayerMask.GetMask("TouchObject", "Zone", "LightProbeVolume", "PlayerHandAndFoot")))
+                    if (hitCreature != null && !hitCreature.isKilled)
                     {
-                        Creature hitCreature = hit3.collider?.transform.root.GetComponent<Creature>();
-
-                        if (hitCreature != null && !hitCreature.isKilled)
+                        EffectData effectData = Catalog.GetData<EffectData>("HitLightningBolt", true);
+                        if (effectData != null)
                         {
-                            EffectData effectData = Catalog.GetData<EffectData>("SpellLightningBolt", true);
-                            if (effectData != null)
-                            {
-                                EffectInstance effect = effectData.Spawn(hit3.point, Quaternion.LookRotation(hit3.normal));
-                                effect.Play();
-                                hitCreature.AddForce((hitCreature.transform.position - hit3.point).normalized * 20f, ForceMode.Impulse);
-                                GameManager.local.StartCoroutine(DespawnAfter(effect, 3f));
-                            }
+                            EffectInstance effect = effectData.Spawn(collision.contactPoint, Quaternion.LookRotation(collision.contactNormal));
+                            effect.Play();
+                            GameManager.local.StartCoroutine(DespawnAfter(effect, 3f));
+
+                            Vector3 pushDir = (hitCreature.transform.position - collision.contactPoint).normalized;
+                            hitCreature.ragdoll.rootPart.physicBody.AddForce(pushDir * 20f, ForceMode.Impulse);
                         }
                     }
                     break;
@@ -107,7 +96,7 @@ namespace BowAimbot
                     break;
 
             }
-
+            StopSeeking(star);
             star.OnFlyEndEvent -= OnStarFlyEnd;
             star.mainCollisionHandler.OnCollisionStartEvent -= OnStarCollision;
             damager.OnPenetrateEvent -= OnStarPenetrate;

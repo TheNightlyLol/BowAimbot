@@ -29,7 +29,7 @@ namespace BowAimbot
 
         [ModOptionCategory("Bow", 3)]
         [ModOptionButton]
-        [ModOption("Play Effect on Hit", "Makes an effect play on hit", valueSourceName = nameof(_PlayEffects))] // Need to set this to be multiple options 
+        [ModOption("Play Effect on Hit", "Makes an effect play on hit", valueSourceName = nameof(_PlayEffectsBow))] // Need to set this to be multiple options 
         public static string bowPlayEffect;
 
         //  If the target is a little bit away, it will make it so then when the arrow goes flying it'll suddenly speedup like half a second in and make a firework sound and effect (only will play effect if it's visible)
@@ -56,7 +56,7 @@ namespace BowAimbot
 
         [ModOptionCategory("Throwing Stars", 3)]
         [ModOptionButton]
-        [ModOption("Play Effect on Hit", "Makes an effect play on hit", valueSourceName = nameof(_PlayEffects))] // Need to set this to be multiple options 
+        [ModOption("Play Effect on Hit", "Makes an effect play on hit", valueSourceName = nameof(_PlayEffectsStar))] // Need to set this to be multiple options 
         public static string starPlayEffect;
 
         [ModOptionCategory("Throwing Stars", 4)]
@@ -100,13 +100,22 @@ namespace BowAimbot
             new ModOptionString("Random",       "Random")
         };
 
-        internal static ModOptionString[] _PlayEffects() => new[]
+        internal static ModOptionString[] _PlayEffectsBow() => new[]
         {
             new ModOptionString("None", "None"),
             new ModOptionString("Gravity", "Gravity"),
             new ModOptionString("Explosion", "Explosion"),
             new ModOptionString("Lightning Strike", "Lightning Strike")
         };
+
+        internal static ModOptionString[] _PlayEffectsStar() => new[]
+{
+            new ModOptionString("None", "None"),
+            new ModOptionString("Gravity", "Gravity"),
+            new ModOptionString("Explosion", "Explosion"),
+            new ModOptionString("Lightning Strike", "Lightning Strike")
+        };
+
 
         public class AimPartDefinition
         {
