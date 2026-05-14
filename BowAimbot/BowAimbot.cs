@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Linq;
 using ThunderRoad;
-using ThunderRoad.AI.Get;
 using UnityEngine;
 
 namespace BasAimbot
