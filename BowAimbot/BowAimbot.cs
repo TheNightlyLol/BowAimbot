@@ -8,7 +8,7 @@ namespace BasAimbot
     public class BowAimbot : ThunderScript
     {
         private const float ArrowSpeed = 30f;
-        private const float ArrivalDistSqr = 0.15f; 
+        private const float ArrivalDistSqr = 0.15f;
         private Creature targetCreature;
         private float targetDistance = Mathf.Infinity;
 
@@ -29,7 +29,7 @@ namespace BasAimbot
 
             // for each damager on the arrow, subscribe to the penetrate event so we can stop seeking if the arrow penetrates something.
             foreach (Damager damager in arrow.mainCollisionHandler.damagers)
-                damager.OnPenetrateEvent += OnArrowPenetrate; 
+                damager.OnPenetrateEvent += OnArrowPenetrate;
         }
 
         private void OnArrowFlyEnd(Item arrow)
@@ -45,7 +45,7 @@ namespace BasAimbot
 
         private void OnArrowCollision(CollisionInstance collision)
         {
-            if (collision.damageStruct.hitRagdollPart != null) return; 
+            if (collision.damageStruct.hitRagdollPart != null) return;
 
             Item arrow = collision.sourceColliderGroup.collisionHandler.item;
             StopSeeking(arrow);

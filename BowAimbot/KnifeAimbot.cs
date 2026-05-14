@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace BasAimbot
 {
-    public class StarAim : ThunderScript
+    public class KnifeAimbot : ThunderScript
     {
         private const float StarSpeed = 30f;
         private const float ArrivalDistSqr = 0.15f;
@@ -16,18 +16,18 @@ namespace BasAimbot
         {
             base.ScriptLoaded(modData);
             EventManager.OnItemRelease += OnItemRelease;
-            EventManager.OnItemGrab += OnItemGrab; 
+            EventManager.OnItemGrab += OnItemGrab;
         }
 
         private void OnItemRelease(Handle handle, RagdollHand hand, bool throwing)
         {
             if (hand.creature != Player.currentCreature) return;
-            if (handle.item?.data?.id != "ThrowablesRaktaThrowingStar") return;
+            if (handle.item?.data?.id != "ThrowablesDagger") return;
             if (!throwing) return;
 
             GameManager.local.StartCoroutine(SeekRoutine(handle.item));
             IgnoreAllStarCollisions();
-            handle.item.OnFlyEndEvent += OnStarFlyEnd; 
+            handle.item.OnFlyEndEvent += OnStarFlyEnd;
             handle.item.mainCollisionHandler.OnCollisionStartEvent += OnStarCollision;
 
             foreach (Damager damager in handle.item.mainCollisionHandler.damagers)
@@ -42,7 +42,7 @@ namespace BasAimbot
 
         private void IgnoreAllStarCollisions()
         {
-            var stars = Item.allActive.Where(i => i.data.id == "ThrowablesRaktaThrowingStar").ToList();
+            var stars = Item.allActive.Where(i => i.data.id == "ThrowablesDagger").ToList();
 
             for (int i = 0; i < stars.Count; i++)
                 for (int j = i + 1; j < stars.Count; j++)
@@ -58,12 +58,12 @@ namespace BasAimbot
             if (eventTime == EventTime.OnStart) return;
             Item star = damager.collisionHandler.item;
             Creature hitCreature = collision.damageStruct.hitRagdollPart?.ragdoll.creature;
-            
+
             StopSeeking(star);
             star.OnFlyEndEvent -= OnStarFlyEnd;
             star.mainCollisionHandler.OnCollisionStartEvent -= OnStarCollision;
             damager.OnPenetrateEvent -= OnStarPenetrate;
-        }   
+        }
 
         private void OnStarFlyEnd(Item star)
         {
@@ -127,11 +127,11 @@ namespace BasAimbot
         private bool TryFindTarget(Item star, out Transform targetTransform)
         {
             targetTransform = null;
-            float closestAngle = Mathf.Infinity; 
+            float closestAngle = Mathf.Infinity;
 
             foreach (Creature creature in Creature.allActive)
             {
-                if (creature == null || creature.isKilled || creature.isPlayer) continue; 
+                if (creature == null || creature.isKilled || creature.isPlayer) continue;
 
                 RagdollPart aimPart = GetAimPart(star, creature);
                 if (aimPart == null) continue;
@@ -150,7 +150,7 @@ namespace BasAimbot
                 targetTransform = aimPart.transform;
             }
 
-            return targetCreature != null; 
+            return targetCreature != null;
         }
 
         private IEnumerator SeekRoutine(Item star)
@@ -189,13 +189,13 @@ namespace BasAimbot
                     yield break;
                 }
 
-                yield return null; 
+                yield return null;
             }
 
-            StopSeeking(star); 
+            StopSeeking(star);
         }
 
-       private void StopSeeking(Item star)
+        private void StopSeeking(Item star)
         {
             targetCreature = null;
             targetDistance = Mathf.Infinity;
