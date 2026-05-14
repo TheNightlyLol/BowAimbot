@@ -61,7 +61,7 @@
     <Compile Include="GunAimbot.cs" />
     <Compile Include="BowAimbot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StarAndKnife.cs" />
+    <Compile Include="StarAim.cs" />
     <Compile Include="_ModOptions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

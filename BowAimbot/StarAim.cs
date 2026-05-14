@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace BasAimbot
 {
-    public class StarAndKnife : ThunderScript
+    public class StarAim : ThunderScript
     {
         private const float StarSpeed = 30f;
         private const float ArrivalDistSqr = 0.15f;
@@ -22,7 +22,7 @@ namespace BasAimbot
         private void OnItemRelease(Handle handle, RagdollHand hand, bool throwing)
         {
             if (hand.creature != Player.currentCreature) return;
-            if (handle.item?.data?.id != "ThrowablesRaktaThrowingStar" || handle.item?.data?.id != "ThrowablesDagger") return;
+            if (handle.item?.data?.id != "ThrowablesRaktaThrowingStar") return;
             if (!throwing) return; // So then simply dropping the item won't make it seek. 
 
             GameManager.local.StartCoroutine(SeekRoutine(handle.item));
