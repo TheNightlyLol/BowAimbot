@@ -1,25 +1,40 @@
 ﻿using UnityEngine; 
 using ThunderRoad;
+using System.Collections;
 
 namespace BasAimbot
 {
     public class Debugging : ThunderScript
     {
         private RagdollHand hand;
-
         public override void ScriptLoaded(ModManager.ModData modData)
         {
             base.ScriptLoaded(modData);
-            EventManager.onItemEnterTrigger += OnItemEnterTrigger;
+            EventManager.OnToggleOptionsMenu += OnToggleOptionsMenu; 
         }
 
-        private void OnItemEnterTrigger(Item item, string triggerTag)
+        private void OnToggleOptionsMenu(bool isVisible)
         {
-            if (item?.data?.id != "CrystalMusket") return;
-            if (hand.creature != Player.currentCreature) return; 
-            foreach (Item i in Item.allActive)
+            if (isVisible)
             {
-                Debug.Log($"Item ID's: {i.data.id} and this is the triggerTag to see what it is: {triggerTag}");
+                GameManager.local.StartCoroutine(LogItems()); 
+            }
+        }
+
+        private IEnumerator LogItems()
+        {
+            int frameCount = 0; 
+
+            while (frameCount < 10)
+            {
+                foreach (Item item in Item.allActive)
+                {
+                    Debug.Log($"Frame {frameCount} - Item: {item.data.id}");
+                }
+
+                frameCount++;
+
+                yield return null; 
             }
         }
     }
