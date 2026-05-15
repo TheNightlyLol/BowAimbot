@@ -8,43 +8,65 @@ namespace BasAimbot
 {
     public class GunAimbot : ThunderScript
     {
-        private RagdollHand hand;
-
-        private const float ShardSpeed = 30f; 
-        private const float ArrivalDistSqr = 0.15f;
         private Creature _targetCreature;
+        private Item _projectile;
+
+        private const float ShardSpeed = 30f;
+        private const float ArrivalDistSqr = 0.15f;
         private float _targetDistance = Mathf.Infinity;
 
-        private Item _projectile; 
+        private bool _playerHoldingMusket = false;
+
         public override void ScriptLoaded(ModManager.ModData modData)
         {
-            base.ScriptLoaded(modData); 
-            Item.OnItemSpawn += OnItemSpawn; 
+            base.ScriptLoaded(modData);
+            Item.OnItemSpawn += OnItemSpawn;
+            EventManager.onLevelLoad += onLevelLoad;
+            EventManager.OnItemGrab += OnItemGrab;
+            EventManager.OnItemRelease += OnItemRelease;
+        }
+
+        private void OnItemGrab(Handle handle, RagdollHand hand)
+        {
+            if (handle.item?.data?.id != "CrystalMusket") return;
+            if (hand.creature != Player.currentCreature) return;
+            _playerHoldingMusket = true;
+        }
+
+        private void OnItemRelease(Handle handle, RagdollHand hand, bool throwing)
+        {
+            if (handle.item?.data?.id != "CrystalMusket") return;
+            _playerHoldingMusket = false;
+        }
+
+        private void onLevelLoad(LevelData level, LevelData.Mode mode, EventTime eventTime)
+        {
+            if (Player.currentCreature != null) Debug.Log($"Player Loaded.");
+            Debug.Log(_projectile);
         }
 
         private void OnItemSpawn(Item i)
         {
-            if (i.data.id == "DynamicAreaProjectile")
-                _projectile = i;
-            else if (i.data.id == "DynamicProjectile")
-                _projectile = i;
+            if (i.data.id != "DynamicAreaProjectile" && i.data.id != "DynamicProjectile") return;
+            if (!_playerHoldingMusket) return;
+            if (!_ModOptions.ShardEnabled) return;
 
-            if (hand.creature != Player.currentCreature || hand.grabbedHandle.item?.data?.id != "CrystalMusket") return; 
+            _projectile = i;
             GameManager.local.StartCoroutine(SeekRoutine());
             _projectile.mainCollisionHandler.OnCollisionStartEvent += OnCollision;
         }
 
         private IEnumerator SeekRoutine()
         {
-            if (!TryFindTarget(_projectile, out Transform targetTransform))
-                yield break;
+            if (!TryFindTarget(_projectile, out Transform targetTransform)) yield break;
 
             while (_projectile != null && _targetCreature != null && !_targetCreature.isKilled && _targetDistance <= _ModOptions.maxDistanceToCreature)
             {
                 _targetDistance = Vector3.Distance(
                     _targetCreature.ragdoll.rootPart.transform.position,
-                    _targetCreature.transform.position);
-                
+                    _projectile.transform.position);
+
+
                 Vector3 targetPos = GetTargetPosition(targetTransform, _targetCreature);
                 Vector3 toTarget = targetPos - _projectile.transform.position;
 
@@ -55,7 +77,7 @@ namespace BasAimbot
                     if (_ModOptions.ShardWallBang)
                     {
                         _projectile.physicBody.rigidBody.detectCollisions = false;
-                        _projectile.physicBody.rigidBody.velocity = dir * (ShardSpeed * _ModOptions.ShardSeekingSpeed); 
+                        _projectile.physicBody.rigidBody.velocity = dir * (ShardSpeed * _ModOptions.ShardSeekingSpeed);
                     }
                     else if (HasLineOfSight(targetPos))
                     {
@@ -65,25 +87,23 @@ namespace BasAimbot
                 else
                 {
                     StopSeeking();
-                    yield break; 
+                    yield break;
                 }
 
-                yield return null; 
+                yield return null;
             }
 
             StopSeeking();
         }
-        
+
         private void OnCollision(CollisionInstance collision)
         {
-            if (collision.damageStruct.hitRagdollPart != null)
-            {
-                StopSeeking();
-            }
-            
+            if (collision.damageStruct.hitRagdollPart != null) return;
+
+            StopSeeking();
             _projectile.mainCollisionHandler.OnCollisionStartEvent -= OnCollision;
         }
-        
+
         private void StopSeeking()
         {
             _projectile.mainCollisionHandler.OnCollisionStartEvent -= OnCollision;
@@ -92,7 +112,7 @@ namespace BasAimbot
             _projectile.physicBody.rigidBody.detectCollisions = true;
             GameManager.local.StopCoroutine(SeekRoutine());
         }
-        
+
         private bool HasLineOfSight(Vector3 targetPos)
         {
             Vector3 dir = (targetPos - _projectile.flyDirRef.transform.position).normalized;
@@ -111,7 +131,7 @@ namespace BasAimbot
 
             return partTransform.position;
         }
-        
+
         private bool TryFindTarget(Item star, out Transform targetTransform)
         {
             targetTransform = null;

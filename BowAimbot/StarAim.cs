@@ -160,7 +160,7 @@ namespace BasAimbot
             {
                 targetDistance = Vector3.Distance(
                     targetCreature.ragdoll.rootPart.transform.position,
-                    targetCreature.transform.position);
+                    star.transform.position);
 
                 Vector3 targetPos = GetTargetPosition(targetTransform, targetCreature);
                 Vector3 toTarget = targetPos - star.transform.position;
