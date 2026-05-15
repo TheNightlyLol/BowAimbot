@@ -56,21 +56,21 @@ namespace BasAimbot
         public static bool starFireworkMode = false;
         
         // -- Shard Striker Options -- 
-        [ModOptionCategory("Throwing Stars and Knives", 2)]
-        [ModOption("Enabled", "Enables/Disables the aimbot for Throwing Stars and Throwing Knives")]
+        [ModOptionCategory("Shard Striker", 3)]
+        [ModOption("Enabled", "Enables/Disables the aimbot for the Shard Striker")]
         public static bool ShardEnabled = true;
 
-        [ModOptionCategory("Throwing Stars and Knives", 2)]
+        [ModOptionCategory("Shard Striker", 3)]
         [ModOptionFloatValues(0.1f, 10f, 0.1f)]
         [ModOption("Seeking Speed", interactionType = ModOption.InteractionType.Slider)]
         public static float ShardSeekingSpeed = 1f;
 
-        [ModOptionCategory("Throwing Stars and Knives", 2)]
+        [ModOptionCategory("Shard Striker", 3)]
         [ModOptionButton]
         [ModOption("Wall Bang", "Enables/Disables wall bang")]
         public static bool ShardWallBang = false;
         
-        [ModOptionCategory("Throwing Stars and Knives", 2)]
+        [ModOptionCategory("Shard Striker", 3)]
         [ModOptionButton]
         [ModOption("Firework mode")]
         public static bool ShardFireworkMode = false;
@@ -84,8 +84,8 @@ namespace BasAimbot
         [ModOptionCategory("General", 4)]
         [ModOptionIntValues(0, 360, 1)]
         [ModOptionSlider]
-        [ModOption("Max Angle", tooltip = "This just means how far away from the target you can look/aim for it to hit, set to 360 for all around.")]
-        public static int angle = 180;
+        [ModOption("Max Angle", tooltip = "This just means how far away from the target you can aim for it to hit")]
+        public static int angle = 60;
 
         [ModOptionCategory("General", 4)]
         [ModOptionIntValues(0, 250, 1)]
