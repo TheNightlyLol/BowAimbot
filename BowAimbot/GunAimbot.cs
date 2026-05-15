@@ -9,32 +9,109 @@ namespace BasAimbot
     public class GunAimbot : ThunderScript
     {
         private RagdollHand hand;
-        private Handle handle;
-        private const float FireSpeed = 30f;
+
+        private const float ShardSpeed = 30f; 
         private const float ArrivalDistSqr = 0.15f;
-        private Creature targetCreature;
-        private float targetDistance = Mathf.Infinity;
+        private Creature _targetCreature;
+        private float _targetDistance = Mathf.Infinity;
+
+        private Item _projectile; 
         public override void ScriptLoaded(ModManager.ModData modData)
         {
-            base.ScriptLoaded(modData);
-            EventManager.onItemEnterTrigger += OnItemEnterTrigger;
+            base.ScriptLoaded(modData); 
+            Item.OnItemSpawn += OnItemSpawn; 
         }
 
-        private void OnItemEnterTrigger(Item item, string triggerTag)
+        private void OnItemSpawn(Item i)
         {
-            if (item?.data?.id != "CrystalMusket") return;
-            if (hand.creature != Player.currentCreature) return;
+            if (i.data.id == "DynamicAreaProjectile")
+                _projectile = i;
+            else if (i.data.id == "DynamicProjectile")
+                _projectile = i;
 
-            GameManager.local.StartCoroutine(SeekRoutine(item));
-            handle.item.mainCollisionHandler.OnCollisionStartEvent += OnCollision;
+            if (hand.creature != Player.currentCreature || hand.grabbedHandle.item?.data?.id != "CrystalMusket") return; 
+            GameManager.local.StartCoroutine(SeekRoutine());
+            _projectile.mainCollisionHandler.OnCollisionStartEvent += OnCollision;
         }
 
-        private IEnumerator SeekRoutine(Item item)
+        private IEnumerator SeekRoutine()
         {
-            if (!TryFindTarget(item, out Transform targetTransform))
-                yield break; 
+            if (!TryFindTarget(_projectile, out Transform targetTransform))
+                yield break;
+
+            while (_projectile != null && _targetCreature != null && !_targetCreature.isKilled && _targetDistance <= _ModOptions.maxDistanceToCreature)
+            {
+                _targetDistance = Vector3.Distance(
+                    _targetCreature.ragdoll.rootPart.transform.position,
+                    _targetCreature.transform.position);
+                
+                Vector3 targetPos = GetTargetPosition(targetTransform, _targetCreature);
+                Vector3 toTarget = targetPos - _projectile.transform.position;
+
+                if (toTarget.sqrMagnitude > ArrivalDistSqr)
+                {
+                    Vector3 dir = toTarget.normalized;
+
+                    if (_ModOptions.ShardWallBang)
+                    {
+                        _projectile.physicBody.rigidBody.detectCollisions = false;
+                        _projectile.physicBody.rigidBody.velocity = dir * (ShardSpeed * _ModOptions.ShardSeekingSpeed); 
+                    }
+                    else if (HasLineOfSight(targetPos))
+                    {
+                        _projectile.physicBody.velocity = dir * (ShardSpeed * _ModOptions.ShardSeekingSpeed);
+                    }
+                }
+                else
+                {
+                    StopSeeking();
+                    yield break; 
+                }
+
+                yield return null; 
+            }
+
+            StopSeeking();
+        }
+        
+        private void OnCollision(CollisionInstance collision)
+        {
+            if (collision.damageStruct.hitRagdollPart != null)
+            {
+                StopSeeking();
+            }
+            
+            _projectile.mainCollisionHandler.OnCollisionStartEvent -= OnCollision;
+        }
+        
+        private void StopSeeking()
+        {
+            _projectile.mainCollisionHandler.OnCollisionStartEvent -= OnCollision;
+            _targetCreature = null;
+            _targetDistance = Mathf.Infinity;
+            _projectile.physicBody.rigidBody.detectCollisions = true;
+            GameManager.local.StopCoroutine(SeekRoutine());
+        }
+        
+        private bool HasLineOfSight(Vector3 targetPos)
+        {
+            Vector3 dir = (targetPos - _projectile.flyDirRef.transform.position).normalized;
+
+            if (Physics.Raycast(_projectile.flyDirRef.transform.position, dir, out RaycastHit hit, _targetDistance,
+                    ~LayerMask.GetMask("TouchObject", "Zone", "LightProbeVolume", "PlayerHandAndFoot")))
+                return hit.collider.transform.root.GetComponent<Creature>() != null;
+
+            return false;
         }
 
+        private static Vector3 GetTargetPosition(Transform partTransform, Creature creature)
+        {
+            if (_ModOptions.AimPartDefinitions.TryGetValue(_ModOptions.ragdollAimPart, out _ModOptions.AimPartDefinition def))
+                return def.GetPosition(partTransform, creature);
+
+            return partTransform.position;
+        }
+        
         private bool TryFindTarget(Item star, out Transform targetTransform)
         {
             targetTransform = null;
@@ -44,7 +121,7 @@ namespace BasAimbot
             {
                 if (creature == null || creature.isKilled || creature.isPlayer) continue;
 
-                RagdollPart aimPart = GetAimPart(star, creature);
+                RagdollPart aimPart = GetAimPart(creature);
                 if (aimPart == null) continue;
 
                 float angleToCreature = Vector3.Angle(
@@ -54,22 +131,22 @@ namespace BasAimbot
                 if (angleToCreature >= closestAngle || angleToCreature > _ModOptions.angle) continue;
 
                 closestAngle = angleToCreature;
-                targetCreature = creature;
-                targetDistance = Vector3.Distance(
+                _targetCreature = creature;
+                _targetDistance = Vector3.Distance(
                     creature.ragdoll.rootPart.transform.position,
                     star.transform.position);
                 targetTransform = aimPart.transform;
             }
 
-            return targetCreature != null;
+            return _targetCreature != null;
         }
 
-        private RagdollPart GetAimPart(Item star, Creature creature)
+        private RagdollPart GetAimPart(Creature creature)
         {
             switch (_ModOptions.ragdollAimPart)
             {
                 case "Closest Part":
-                    return GetClosestPart(star, creature);
+                    return GetClosestPart(creature);
                 case "Random":
                     var types = _ModOptions.AimPartDefinitions.Values.Select(d => d.PartType).ToList();
                     return creature.ragdoll.GetPart(types[Random.Range(0, types.Count)]);
@@ -80,7 +157,7 @@ namespace BasAimbot
             }
         }
 
-        private static RagdollPart GetClosestPart(Item star, Creature creature)
+        private RagdollPart GetClosestPart(Creature creature)
         {
             RagdollPart closest = null;
             float closestAngle = Mathf.Infinity;
@@ -88,8 +165,8 @@ namespace BasAimbot
             foreach (RagdollPart part in creature.ragdoll.parts)
             {
                 float partAngle = Vector3.Angle(
-                    part.transform.position - star.transform.position,
-                    star.flyDirRef.forward);
+                    part.transform.position - _projectile.transform.position,
+                    _projectile.flyDirRef.forward);
 
                 if (partAngle < closestAngle)
                 {

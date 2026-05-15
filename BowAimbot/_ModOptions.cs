@@ -49,27 +49,45 @@ namespace BasAimbot
         [ModOptionButton]
         [ModOption("Wall Bang", "Enables/Disables wall bang")]
         public static bool starWallBang = false;
-
-
-
+        
         [ModOptionCategory("Throwing Stars and Knives", 2)]
         [ModOptionButton]
         [ModOption("Firework mode")]
         public static bool starFireworkMode = false;
         
+        // -- Shard Striker Options -- 
+        [ModOptionCategory("Throwing Stars and Knives", 2)]
+        [ModOption("Enabled", "Enables/Disables the aimbot for Throwing Stars and Throwing Knives")]
+        public static bool ShardEnabled = true;
+
+        [ModOptionCategory("Throwing Stars and Knives", 2)]
+        [ModOptionFloatValues(0.1f, 10f, 0.1f)]
+        [ModOption("Seeking Speed", interactionType = ModOption.InteractionType.Slider)]
+        public static float ShardSeekingSpeed = 1f;
+
+        [ModOptionCategory("Throwing Stars and Knives", 2)]
+        [ModOptionButton]
+        [ModOption("Wall Bang", "Enables/Disables wall bang")]
+        public static bool ShardWallBang = false;
+        
+        [ModOptionCategory("Throwing Stars and Knives", 2)]
+        [ModOptionButton]
+        [ModOption("Firework mode")]
+        public static bool ShardFireworkMode = false;
+        
         // -- General Options --
 
-        [ModOptionCategory("General", 3)]
+        [ModOptionCategory("General", 4)]
         [ModOption(name = "Aim Part", tooltip = "Part it aims at", valueSourceName = nameof(AimPartValues))]
         public static string ragdollAimPart;
 
-        [ModOptionCategory("General", 3)]
+        [ModOptionCategory("General", 4)]
         [ModOptionIntValues(0, 360, 1)]
         [ModOptionSlider]
         [ModOption("Max Angle", tooltip = "This just means how far away from the target you can look/aim for it to hit, set to 360 for all around.")]
         public static int angle = 180;
 
-        [ModOptionCategory("General", 3)]
+        [ModOptionCategory("General", 4)]
         [ModOptionIntValues(0, 250, 1)]
         [ModOptionSlider]
         [ModOption("Max Distance", tooltip = "Max distance to the creature")]
