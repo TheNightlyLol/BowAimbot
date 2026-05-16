@@ -9,8 +9,10 @@ namespace BasAimbot
     {
         private const float ArrowSpeed = 30f;
         private const float ArrivalDistSqr = 0.15f;
-        private Creature targetCreature;
-        private float targetDistance = Mathf.Infinity;
+
+        private Creature _targetCreature;
+        private float _targetDistance = Mathf.Infinity;
+        private Coroutine _seekCoroutine;
 
         public override void ScriptLoaded(ModManager.ModData modData)
         {
@@ -23,31 +25,15 @@ namespace BasAimbot
             if (!_ModOptions.bowEnabled) return;
             if (arrow.lastHandler.creature != Player.currentCreature) return;
 
-            GameManager.local.StartCoroutine(SeekRoutine(arrow));
+            _seekCoroutine = GameManager.local.StartCoroutine(SeekRoutine(arrow));
             arrow.OnFlyEndEvent += OnArrowFlyEnd;
             arrow.mainCollisionHandler.OnCollisionStartEvent += OnArrowCollision;
-
-            // for each damager on the arrow, subscribe to the penetrate event so we can stop seeking if the arrow penetrates something.
             foreach (Damager damager in arrow.mainCollisionHandler.damagers)
                 damager.OnPenetrateEvent += OnArrowPenetrate;
         }
 
-        private void OnArrowFlyEnd(Item arrow)
+        private void CleanupArrow(Item arrow)
         {
-            StopSeeking(arrow);
-            arrow.OnFlyEndEvent -= OnArrowFlyEnd;
-            arrow.mainCollisionHandler.OnCollisionStartEvent -= OnArrowCollision;
-
-            // For each damager on the arrow, unsubscribe from the penetrate event to prevent memory leaks.
-            foreach (Damager damager in arrow.mainCollisionHandler.damagers)
-                damager.OnPenetrateEvent -= OnArrowPenetrate;
-        }
-
-        private void OnArrowCollision(CollisionInstance collision)
-        {
-            if (collision.damageStruct.hitRagdollPart != null) return;
-
-            Item arrow = collision.sourceColliderGroup.collisionHandler.item;
             StopSeeking(arrow);
             arrow.OnFlyEndEvent -= OnArrowFlyEnd;
             arrow.mainCollisionHandler.OnCollisionStartEvent -= OnArrowCollision;
@@ -58,40 +44,50 @@ namespace BasAimbot
         private void OnArrowPenetrate(Damager damager, CollisionInstance collision, EventTime eventTime)
         {
             if (eventTime == EventTime.OnStart) return;
+            CleanupArrow(damager.collisionHandler.item);
+        }
 
-            Item arrow = damager.collisionHandler.item;
-            Creature hitCreature = collision.damageStruct.hitRagdollPart?.ragdoll.creature;
+        private void OnArrowFlyEnd(Item arrow)
+        {
+            CleanupArrow(arrow);
+        }
 
-            StopSeeking(arrow);
-            arrow.OnFlyEndEvent -= OnArrowFlyEnd;
-            arrow.mainCollisionHandler.OnCollisionStartEvent -= OnArrowCollision;
-            damager.OnPenetrateEvent -= OnArrowPenetrate;
+        private void OnArrowCollision(CollisionInstance collision)
+        {
+            if (collision.damageStruct.hitRagdollPart != null) return;
+            CleanupArrow(collision.sourceColliderGroup.collisionHandler.item);
         }
 
         private void StopSeeking(Item arrow)
         {
-            targetCreature = null;
-            targetDistance = Mathf.Infinity;
-            arrow.physicBody.rigidBody.detectCollisions = true;
-            GameManager.local.StopCoroutine(SeekRoutine(arrow));
-        }
+            _targetCreature = null;
+            _targetDistance = Mathf.Infinity;
 
-        // ── Seeking Coroutine ─────────────────────────────────────────────────────
+            if (arrow?.physicBody?.rigidBody != null)
+                arrow.physicBody.rigidBody.detectCollisions = true;
+
+            if (_seekCoroutine != null)
+            {
+                GameManager.local.StopCoroutine(_seekCoroutine);
+                _seekCoroutine = null;
+            }
+        }
 
         private IEnumerator SeekRoutine(Item arrow)
         {
             if (!TryFindTarget(arrow, out Transform targetTransform))
                 yield break;
 
-            while (arrow != null && targetCreature != null
-                && !targetCreature.isKilled
-                && targetDistance <= _ModOptions.maxDistanceToCreature)
+            while (arrow != null
+                && _targetCreature != null
+                && !_targetCreature.isKilled
+                && _targetDistance <= _ModOptions.maxDistanceToCreature)
             {
-                targetDistance = Vector3.Distance(
-                    targetCreature.ragdoll.rootPart.transform.position,
+                _targetDistance = Vector3.Distance(
+                    _targetCreature.ragdoll.rootPart.transform.position,
                     arrow.transform.position);
 
-                Vector3 targetPos = GetTargetPosition(targetTransform, targetCreature);
+                Vector3 targetPos = GetTargetPosition(targetTransform, _targetCreature);
                 Vector3 toTarget = targetPos - arrow.transform.position;
 
                 if (toTarget.sqrMagnitude > ArrivalDistSqr)
@@ -100,11 +96,10 @@ namespace BasAimbot
 
                     if (_ModOptions.bowWallBang)
                     {
-                        // Disable collisions so the arrow can pass through walls
                         arrow.physicBody.rigidBody.detectCollisions = false;
                         arrow.physicBody.velocity = dir * ArrowSpeed * _ModOptions.bowSeekingSpeed;
                     }
-                    else if (HasLineOfSight(arrow, targetPos))
+                    else if (HasLineOfSight(arrow, targetPos, _targetDistance))
                     {
                         arrow.physicBody.velocity = dir * ArrowSpeed * _ModOptions.bowSeekingSpeed;
                     }
@@ -125,6 +120,7 @@ namespace BasAimbot
         {
             targetTransform = null;
             float closestAngle = Mathf.Infinity;
+            _targetCreature = null;
 
             foreach (Creature creature in Creature.allActive)
             {
@@ -140,14 +136,14 @@ namespace BasAimbot
                 if (angleToCreature >= closestAngle || angleToCreature > _ModOptions.angle) continue;
 
                 closestAngle = angleToCreature;
-                targetCreature = creature;
-                targetDistance = Vector3.Distance(
+                _targetCreature = creature;
+                _targetDistance = Vector3.Distance(
                     creature.ragdoll.rootPart.transform.position,
                     arrow.transform.position);
                 targetTransform = aimPart.transform;
             }
 
-            return targetCreature != null;
+            return _targetCreature != null;
         }
 
         private RagdollPart GetAimPart(Item arrow, Creature creature)
@@ -166,7 +162,6 @@ namespace BasAimbot
             }
         }
 
-        // Returns the ragdoll part closest to the arrow's current flight direction
         private static RagdollPart GetClosestPart(Item arrow, Creature creature)
         {
             RagdollPart closest = null;
@@ -196,12 +191,11 @@ namespace BasAimbot
             return partTransform.position;
         }
 
-        private static bool HasLineOfSight(Item arrow, Vector3 targetPos)
+        private static bool HasLineOfSight(Item arrow, Vector3 targetPos, float maxDist)
         {
             Vector3 dir = (targetPos - arrow.flyDirRef.transform.position).normalized;
 
-            // Exclude non-solid layers that shouldn't block line of sight
-            if (Physics.Raycast(arrow.flyDirRef.transform.position, dir, out RaycastHit hit, Mathf.Infinity,
+            if (Physics.Raycast(arrow.flyDirRef.transform.position, dir, out RaycastHit hit, maxDist,
                 ~LayerMask.GetMask("TouchObject", "Zone", "LightProbeVolume", "PlayerHandAndFoot")))
                 return hit.collider.transform.root.GetComponent<Creature>() != null;
 
