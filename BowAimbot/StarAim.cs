@@ -22,8 +22,7 @@ namespace BasAimbot
 
         private void OnItemRelease(Handle handle, RagdollHand hand, bool throwing)
         {
-            if (hand.creature != Player.currentCreature || handle.item?.data?.id != "ThrowablesRaktaThrowingStar") return;
-            if (hand.physicBody.velocity.sqrMagnitude <= 9f) return;
+            if (hand.creature != Player.currentCreature || handle.item?.data?.id != "ThrowablesRaktaThrowingStar") return; 
 
             _activeCoroutines[handle.item] = GameManager.local.StartCoroutine(SeekRoutine(handle.item));
             IgnoreNewStarCollisions(handle.item);
