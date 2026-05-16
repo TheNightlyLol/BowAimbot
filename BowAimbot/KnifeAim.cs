@@ -2,6 +2,7 @@
 using ThunderRoad;
 using System.Collections;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace BasAimbot
 {
@@ -9,24 +10,23 @@ namespace BasAimbot
     {
         private const float StarSpeed = 30f;
         private const float ArrivalDistSqr = 0.15f;
-        private Creature targetCreature;
-        private float targetDistance = Mathf.Infinity;
+        private readonly Dictionary<Item, Coroutine> _activeCoroutines = new Dictionary<Item, Coroutine>();
+        private readonly Dictionary<Item, Creature> _targetCreatures = new Dictionary<Item, Creature>();
+        private readonly Dictionary<Item, float> _targetDistances = new Dictionary<Item, float>();
 
         public override void ScriptLoaded(ModManager.ModData modData)
         {
             base.ScriptLoaded(modData);
             EventManager.OnItemRelease += OnItemRelease;
-            EventManager.OnItemGrab += OnItemGrab;
         }
 
         private void OnItemRelease(Handle handle, RagdollHand hand, bool throwing)
         {
-            if (hand.creature != Player.currentCreature) return;
-            if (handle.item?.data?.id != "ThrowablesDagger") return;
+            if (hand.creature != Player.currentCreature || handle.item?.data?.id != "ThrowablesDagger") return;
             if (!throwing) return;
 
-            GameManager.local.StartCoroutine(SeekRoutine(handle.item));
-            IgnoreAllStarCollisions();
+            _activeCoroutines[handle.item] = GameManager.local.StartCoroutine(SeekRoutine(handle.item));
+            IgnoreNewStarCollisions(handle.item);
             handle.item.OnFlyEndEvent += OnStarFlyEnd;
             handle.item.mainCollisionHandler.OnCollisionStartEvent += OnStarCollision;
 
@@ -34,44 +34,25 @@ namespace BasAimbot
                 damager.OnPenetrateEvent += OnStarPenetrate;
         }
 
-        private void OnItemGrab(Handle handle, RagdollHand hand)
-        {
-            Debug.Log(handle.item.data.id);
-        }
-
-
-        private void IgnoreAllStarCollisions()
-        {
-            var stars = Item.allActive.Where(i => i.data.id == "ThrowablesDagger").ToList();
-
-            for (int i = 0; i < stars.Count; i++)
-                for (int j = i + 1; j < stars.Count; j++)
-                    foreach (ColliderGroup cg1 in stars[i].colliderGroups)
-                        foreach (Collider c1 in cg1.colliders)
-                            foreach (ColliderGroup cg2 in stars[j].colliderGroups)
-                                foreach (Collider c2 in cg2.colliders)
-                                    Physics.IgnoreCollision(c1, c2, true);
-        }
-
-        private void OnStarPenetrate(Damager damager, CollisionInstance collision, EventTime eventTime)
-        {
-            if (eventTime == EventTime.OnStart) return;
-            Item star = damager.collisionHandler.item;
-            Creature hitCreature = collision.damageStruct.hitRagdollPart?.ragdoll.creature;
-
-            StopSeeking(star);
-            star.OnFlyEndEvent -= OnStarFlyEnd;
-            star.mainCollisionHandler.OnCollisionStartEvent -= OnStarCollision;
-            damager.OnPenetrateEvent -= OnStarPenetrate;
-        }
-
-        private void OnStarFlyEnd(Item star)
+        private void CleanupStar(Item star)
         {
             StopSeeking(star);
             star.OnFlyEndEvent -= OnStarFlyEnd;
             star.mainCollisionHandler.OnCollisionStartEvent -= OnStarCollision;
             foreach (Damager damager in star.mainCollisionHandler.damagers)
                 damager.OnPenetrateEvent -= OnStarPenetrate;
+        }
+
+        private void OnStarPenetrate(Damager damager, CollisionInstance collision, EventTime eventTime)
+        {
+            if (eventTime == EventTime.OnStart) return;
+            Item star = damager.collisionHandler.item;
+            CleanupStar(star);
+        }
+
+        private void OnStarFlyEnd(Item star)
+        {
+            CleanupStar(star);
         }
 
         private void OnStarCollision(CollisionInstance collision)
@@ -79,12 +60,7 @@ namespace BasAimbot
             if (collision.damageStruct.hitRagdollPart != null) return;
 
             Item star = collision.sourceColliderGroup.collisionHandler.item;
-            StopSeeking(star);
-            star.OnFlyEndEvent -= OnStarFlyEnd;
-            star.mainCollisionHandler.OnCollisionStartEvent -= OnStarCollision;
-
-            foreach (Damager damager in star.mainCollisionHandler.damagers)
-                damager.OnPenetrateEvent -= OnStarPenetrate;
+            CleanupStar(star);
         }
 
         private RagdollPart GetAimPart(Item star, Creature creature)
@@ -128,6 +104,7 @@ namespace BasAimbot
         {
             targetTransform = null;
             float closestAngle = Mathf.Infinity;
+            _targetCreatures[star] = null;
 
             foreach (Creature creature in Creature.allActive)
             {
@@ -143,42 +120,42 @@ namespace BasAimbot
                 if (angleToCreature >= closestAngle || angleToCreature > _ModOptions.angle) continue;
 
                 closestAngle = angleToCreature;
-                targetCreature = creature;
-                targetDistance = Vector3.Distance(
+                _targetCreatures[star] = creature;
+                _targetDistances[star] = Vector3.Distance(
                     creature.ragdoll.rootPart.transform.position,
                     star.transform.position);
                 targetTransform = aimPart.transform;
             }
 
-            return targetCreature != null;
+            return _targetCreatures.TryGetValue(star, out Creature t) && t != null;
         }
 
         private IEnumerator SeekRoutine(Item star)
         {
-            if (!TryFindTarget(star, out Transform targetTransform))
-                yield break;
+            if (!TryFindTarget(star, out Transform targetTransform)) yield break;
 
-            while (star != null && targetCreature != null
-                && !targetCreature.isKilled
-                && targetDistance <= _ModOptions.maxDistanceToCreature)
+            while (star != null
+                && _targetCreatures.TryGetValue(star, out Creature tc) && tc != null
+                && !tc.isKilled
+                && _targetDistances.TryGetValue(star, out float td) && td <= _ModOptions.maxDistanceToCreature)
             {
-                targetDistance = Vector3.Distance(
-                    targetCreature.ragdoll.rootPart.transform.position,
-                    targetCreature.transform.position);
+                _targetDistances[star] = Vector3.Distance(
+                    tc.ragdoll.rootPart.transform.position,
+                    star.transform.position);
+                float currentDist = _targetDistances[star];
 
-                Vector3 targetPos = GetTargetPosition(targetTransform, targetCreature);
+                Vector3 targetPos = GetTargetPosition(targetTransform, tc);
                 Vector3 toTarget = targetPos - star.transform.position;
 
                 if (toTarget.sqrMagnitude > ArrivalDistSqr)
                 {
                     Vector3 dir = toTarget.normalized;
-
                     if (_ModOptions.starWallBang)
                     {
                         star.physicBody.rigidBody.detectCollisions = false;
                         star.physicBody.rigidBody.velocity = dir * StarSpeed * _ModOptions.starSeekingSpeed;
                     }
-                    else if (HasLineOfSight(star, targetPos))
+                    else if (HasLineOfSight(star, targetPos, currentDist))
                     {
                         star.physicBody.velocity = dir * StarSpeed * _ModOptions.starSeekingSpeed;
                     }
@@ -197,18 +174,22 @@ namespace BasAimbot
 
         private void StopSeeking(Item star)
         {
-            targetCreature = null;
-            targetDistance = Mathf.Infinity;
+            _targetCreatures.Remove(star);
+            _targetDistances.Remove(star);
             star.physicBody.rigidBody.detectCollisions = true;
-            GameManager.local.StopCoroutine(SeekRoutine(star));
+
+            if (_activeCoroutines.TryGetValue(star, out Coroutine c))
+            {
+                GameManager.local.StopCoroutine(c);
+                _activeCoroutines.Remove(star);
+            }
         }
 
-        private static bool HasLineOfSight(Item star, Vector3 targetPos)
+        private static bool HasLineOfSight(Item star, Vector3 targetPos, float maxDist)
         {
             Vector3 dir = (targetPos - star.flyDirRef.transform.position).normalized;
 
-            // Exclude non-solid layers that shouldn't block line of sight
-            if (Physics.Raycast(star.flyDirRef.transform.position, dir, out RaycastHit hit, Mathf.Infinity,
+            if (Physics.Raycast(star.flyDirRef.transform.position, dir, out RaycastHit hit, maxDist,
                 ~LayerMask.GetMask("TouchObject", "Zone", "LightProbeVolume", "PlayerHandAndFoot")))
                 return hit.collider.transform.root.GetComponent<Creature>() != null;
 
@@ -221,6 +202,16 @@ namespace BasAimbot
                 return def.GetPosition(partTransform, creature);
 
             return partTransform.position;
+        }
+
+        private void IgnoreNewStarCollisions(Item newStar)
+        {
+            foreach (Item star in Item.allActive.Where(i => i.data.id == "ThrowablesDagger" && i != newStar))
+                foreach (ColliderGroup cg1 in newStar.colliderGroups)
+                    foreach (Collider c1 in cg1.colliders)
+                        foreach (ColliderGroup cg2 in star.colliderGroups)
+                            foreach (Collider c2 in cg2.colliders)
+                                Physics.IgnoreCollision(c1, c2, true);
         }
     }
 }

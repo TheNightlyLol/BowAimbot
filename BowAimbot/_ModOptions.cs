@@ -93,23 +93,6 @@ namespace BasAimbot
             new ModOptionString("Random",       "Random")
         };
 
-        internal static ModOptionString[] _PlayEffectsBow() => new[]
-        {
-            new ModOptionString("None", "None"),
-            new ModOptionString("Gravity", "Gravity"),
-            new ModOptionString("Explosion", "Explosion"),
-            new ModOptionString("Lightning Strike", "Lightning Strike")
-        };
-
-        internal static ModOptionString[] _PlayEffectsStar() => new[]
-{
-            new ModOptionString("None", "None"),
-            new ModOptionString("Gravity", "Gravity"),
-            new ModOptionString("Explosion", "Explosion"),
-            new ModOptionString("Lightning Strike", "Lightning Strike")
-        };
-
-
         public class AimPartDefinition
         {
             public RagdollPart.Type PartType;
