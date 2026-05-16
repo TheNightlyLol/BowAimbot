@@ -27,13 +27,6 @@ namespace BasAimbot
         [ModOption("Wall Bang", "Enables/Disables wall bang")]
         public static bool bowWallBang = false;
 
-
-        //  If the target is a little bit away, it will make it so then when the arrow goes flying it'll suddenly speedup like half a second in and make a firework sound and effect (only will play effect if it's visible)
-        [ModOptionCategory("Bow", 1)]
-        [ModOptionButton]
-        [ModOption("Firework mode")]
-        public static bool bowFireworkMode = false; 
-
         // -- Throwing Star Options -- 
 
         [ModOptionCategory("Throwing Stars and Knives", 2)]
@@ -50,30 +43,20 @@ namespace BasAimbot
         [ModOption("Wall Bang", "Enables/Disables wall bang")]
         public static bool starWallBang = false;
         
-        [ModOptionCategory("Throwing Stars and Knives", 2)]
-        [ModOptionButton]
-        [ModOption("Firework mode")]
-        public static bool starFireworkMode = false;
-        
         // -- Shard Striker Options -- 
-        [ModOptionCategory("Shard Striker", 3)]
-        [ModOption("Enabled", "Enables/Disables the aimbot for the Shard Striker")]
-        public static bool ShardEnabled = true;
+        //[ModOptionCategory("Shard Striker", 3)]
+        //[ModOption("Enabled", "Enables/Disables the aimbot for the Shard Striker")]
+        //public static bool ShardEnabled = true;
 
-        [ModOptionCategory("Shard Striker", 3)]
-        [ModOptionFloatValues(0.1f, 10f, 0.1f)]
-        [ModOption("Seeking Speed", interactionType = ModOption.InteractionType.Slider)]
-        public static float ShardSeekingSpeed = 1f;
+        //[ModOptionCategory("Shard Striker", 3)]
+        //[ModOptionFloatValues(0.1f, 10f, 0.1f)]
+        //[ModOption("Seeking Speed", interactionType = ModOption.InteractionType.Slider)]
+        //public static float ShardSeekingSpeed = 1f;
 
-        [ModOptionCategory("Shard Striker", 3)]
-        [ModOptionButton]
-        [ModOption("Wall Bang", "Enables/Disables wall bang")]
-        public static bool ShardWallBang = false;
-        
-        [ModOptionCategory("Shard Striker", 3)]
-        [ModOptionButton]
-        [ModOption("Firework mode")]
-        public static bool ShardFireworkMode = false;
+        //[ModOptionCategory("Shard Striker", 3)]
+        //[ModOptionButton]
+        //[ModOption("Wall Bang", "Enables/Disables wall bang")]
+        //public static bool ShardWallBang = false;
         
         // -- General Options --
 
